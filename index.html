@@ -45,7 +45,7 @@ h1,h2,h3{font-family:var(--display);font-weight:400;margin:0;line-height:1.1;tex
 .ghost{min-height:44px;padding:0 13px;border:2px solid #7E5A86;border-radius:10px;background:none;color:var(--linen);font-weight:600;font-size:15px}
 
 /* Hero with pie */
-.hero{display:grid;grid-template-columns:1fr auto;gap:16px;align-items:center}
+.hero{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:16px;align-items:center}
 .hero h1{font-size:clamp(32px,8.5vw,48px)}
 .details{display:flex;flex-direction:column;gap:3px;margin-top:8px;font-size:16px;color:#EEDFF0}
 .details b{font-weight:600;color:var(--linen)}
@@ -53,6 +53,31 @@ h1,h2,h3{font-family:var(--display);font-weight:400;margin:0;line-height:1.1;tex
 .pie .s{transition:fill .4s}
 .pie .s.on{animation:slice .5s cubic-bezier(.3,1.6,.5,1) backwards}
 @keyframes slice{from{transform:scale(.6);opacity:0}}
+.tk{display:block;overflow:visible}
+.tk .fe{transform-box:fill-box;transform-origin:50% 100%}
+.tk .fe.on.pop{animation:feather .55s cubic-bezier(.3,1.7,.5,1) backwards}
+@keyframes feather{from{transform:scaleY(.2);opacity:0}}
+.tk .head{animation:bob 2.6s ease-in-out infinite;transform-box:fill-box;transform-origin:50% 100%}
+@keyframes bob{0%,70%,100%{transform:none}78%{transform:translateY(-3px) rotate(-8deg)}86%{transform:translateY(-1px) rotate(7deg)}}
+.tk .whole{animation:sway 4s ease-in-out infinite;transform-origin:0 50px}
+@keyframes sway{50%{transform:rotate(1.5deg)}}
+.hero .tk{width:min(140px,34vw)}
+.strut{width:120px;animation:strut 6s ease-in-out infinite}
+@keyframes strut{0%,100%{transform:translateX(0)}45%{transform:translateX(calc(min(420px,100vw - 32px) - 120px))}50%{transform:translateX(calc(min(420px,100vw - 32px) - 120px)) scaleX(-1)}95%{transform:translateX(0) scaleX(-1)}}
+.strut .whole{animation:step .5s ease-in-out infinite}
+@keyframes step{50%{transform:translateY(-3px) rotate(-2deg)}}
+#splash{position:fixed;inset:0;z-index:9;display:grid;place-items:center;text-align:center;padding:24px;background:var(--cranberry);color:#fff;overflow:hidden;cursor:pointer}
+#splash.hidden{display:none}
+#splash .in{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;gap:10px;max-width:420px;animation:splashIn .45s cubic-bezier(.3,1.5,.5,1)}
+@keyframes splashIn{from{transform:scale(.7);opacity:0}}
+#splash .tk{width:min(230px,60vw)}
+#splash .tk .whole{animation:dance .6s ease-in-out infinite}
+@keyframes dance{0%,100%{transform:rotate(-6deg)}50%{transform:rotate(6deg) translateY(-6px)}}
+#splash h2{font-size:clamp(44px,13vw,72px)}
+#splash p{margin:0;font-size:20px;font-weight:600}
+#splash small{opacity:.8;font-size:14px}
+.leaf{position:absolute;top:-40px;width:26px;height:26px;z-index:1;animation:fall linear forwards}
+@keyframes fall{to{transform:translateY(110vh) rotate(540deg)}}
 .count{text-align:center;font-weight:800;font-size:14px;margin-top:4px}
 .note{background:var(--plum);border-radius:12px;padding:10px 13px;font-size:15px}
 
@@ -87,6 +112,7 @@ h1,h2,h3{font-family:var(--display);font-weight:400;margin:0;line-height:1.1;tex
 </head>
 <body>
 <div id="root"></div>
+<div id="splash" class="hidden" role="dialog" aria-live="assertive"></div>
 <div id="toast" class="toast hidden" role="status"></div>
 <script>
 (function(){
@@ -159,8 +185,9 @@ function gate(msg){
     go.disabled=true;go.textContent="Opening";
     api.load(c).then(function(r){S.code=c;S.who=w;lsSet("tg_code",c);lsSet("tg_who",w);S.data=r;page();},function(e){go.disabled=false;go.textContent="See the menu";show(e.message);});
   }}},
+    h("div",{"aria-hidden":"true"},turkey(10,10,{cls:"strut",label:""})),
     title,date,
-    h("p",{text:"Sign up for a dish so we have everything covered and nothing doubles up."}),
+    h("p",{text:"Sign up for a dish so we have everything covered and nothing doubles up. Every dish fills in a feather on the turkey."}),
     h("div",{class:"fld"},h("label",{for:"who",text:"Your name, as the family knows you"}),who),
     h("div",{class:"fld"},h("label",{for:"code",text:"Family code"}),code),
     !live&&h("p",{class:"small",text:"Preview: any name and code work. The sign-ups are made up."}),
@@ -170,30 +197,65 @@ function gate(msg){
 }
 
 /* ---------- Main page ---------- */
-function pie(total,done){
-  var ns="http://www.w3.org/2000/svg",s=document.createElementNS(ns,"svg");
-  s.setAttribute("viewBox","-52 -52 104 104");s.setAttribute("class","pie");s.setAttribute("role","img");
-  s.setAttribute("aria-label",done+" of "+total+" menu dishes covered");
-  var crust=document.createElementNS(ns,"circle");crust.setAttribute("r","50");crust.setAttribute("fill","#C98B3A");s.appendChild(crust);
-  var n=Math.max(total,1);
+var LEAFC=["#E0742B","#B3264A","#F2A93B","#8B4A2B","#C9533A"];
+function turkey(total,done,opts){
+  opts=opts||{};
+  var ns="http://www.w3.org/2000/svg";
+  function el(t,a){var e=document.createElementNS(ns,t);for(var k in a)e.setAttribute(k,a[k]);return e;}
+  var n=Math.max(total,1),s=el("svg",{viewBox:"-62 -64 124 122",class:"tk"+(opts.cls?" "+opts.cls:""),role:"img","aria-label":opts.label||(done+" of "+total+" menu dishes covered")});
+  var g=el("g",{class:"whole"});s.appendChild(g);
+  var span=170,w=Math.max(5,Math.min(11,140/n));
   for(var i=0;i<n;i++){
-    var a0=(i/n)*Math.PI*2-Math.PI/2,a1=((i+1)/n)*Math.PI*2-Math.PI/2,r=44,g=total?0.5:0;
-    var p=document.createElementNS(ns,"path");
-    var big=(a1-a0)>Math.PI?1:0;
-    p.setAttribute("d","M0 0 L"+(r*Math.cos(a0)).toFixed(2)+" "+(r*Math.sin(a0)).toFixed(2)+" A"+r+" "+r+" 0 "+big+" 1 "+(r*Math.cos(a1)).toFixed(2)+" "+(r*Math.sin(a1)).toFixed(2)+" Z");
+    var ang=n===1?0:(-span/2+span*(i/(n-1)));
     var on=i<done;
-    p.setAttribute("fill",on?"#E0742B":"#5A2F60");p.setAttribute("stroke","#2A1530");p.setAttribute("stroke-width","1.4");
-    p.setAttribute("class","s"+(on?" on":""));
-    if(on&&S.first&&!calm)p.style.animationDelay=(i*0.06)+"s";
-    s.appendChild(p);
+    var f=el("ellipse",{cx:0,cy:-14,rx:w,ry:34,fill:on?LEAFC[i%LEAFC.length]:"#4B2752",stroke:"#2A1530","stroke-width":"1.5",
+      transform:"translate(0 14) rotate("+ang.toFixed(1)+" 0 0) translate(0 -14)",class:"fe"+(on?" on":"")});
+    var wrapF=el("g",{transform:"translate(0 14) rotate("+ang.toFixed(1)+") translate(0 -14)"});
+    f.removeAttribute("transform");
+    f.setAttribute("cy","-20");
+    if(on&&opts.pop){f.setAttribute("class","fe on pop");f.style.animationDelay=(i*0.05)+"s";}
+    wrapF.appendChild(f);g.appendChild(wrapF);
   }
+  g.appendChild(el("path",{d:"M-8 40 L-11 52 M-11 52 L-16 55 M-11 52 L-11 57 M-11 52 L-6 55 M8 40 L11 52 M11 52 L16 55 M11 52 L11 57 M11 52 L6 55",stroke:"#F2A93B","stroke-width":"3","stroke-linecap":"round",fill:"none"}));
+  g.appendChild(el("ellipse",{cx:0,cy:22,rx:24,ry:22,fill:"#7A4A2B",stroke:"#2A1530","stroke-width":"2"}));
+  g.appendChild(el("ellipse",{cx:0,cy:27,rx:14,ry:13,fill:"#9C6238"}));
+  var hd=el("g",{class:"head"});
+  hd.appendChild(el("path",{d:"M-7 6 Q0 -8 7 6 Z",fill:"#7A4A2B"}));
+  hd.appendChild(el("circle",{cx:0,cy:-6,r:11,fill:"#8B5530",stroke:"#2A1530","stroke-width":"2"}));
+  hd.appendChild(el("circle",{cx:-4.5,cy:-9,r:2.6,fill:"#fff"}));hd.appendChild(el("circle",{cx:4.5,cy:-9,r:2.6,fill:"#fff"}));
+  hd.appendChild(el("circle",{cx:-4,cy:-8.6,r:1.4,fill:"#2A1530"}));hd.appendChild(el("circle",{cx:5,cy:-8.6,r:1.4,fill:"#2A1530"}));
+  hd.appendChild(el("path",{d:"M-3.5 -5 L3.5 -5 L0 1 Z",fill:"#F2A93B",stroke:"#2A1530","stroke-width":"1"}));
+  hd.appendChild(el("path",{d:"M1.5 0 Q5 4 2.5 9 Q0 6 1.5 0 Z",fill:"#D6324F"}));
+  g.appendChild(hd);
   return s;
+}
+function leaves(box,count){
+  if(calm)return;
+  for(var i=0;i<count;i++){
+    var d=document.createElement("div");d.className="leaf";
+    d.style.left=(Math.random()*100)+"%";d.style.animationDuration=(1.8+Math.random()*1.8)+"s";d.style.animationDelay=(Math.random()*0.8)+"s";
+    d.innerHTML='<svg viewBox="0 0 24 24" width="26" height="26"><path d="M12 2 L14 8 L20 6 L17 12 L22 14 L15 16 L16 22 L12 18 L8 22 L9 16 L2 14 L7 12 L4 6 L10 8 Z" fill="'+LEAFC[i%LEAFC.length]+'"/></svg>';
+    box.appendChild(d);
+  }
+}
+var CHEERS=["Gobble gobble!","Way to go!","Feast mode!","Now we're cooking!","Pass the gravy!"];
+var splashT=null;
+function splash(dish){
+  var box=document.getElementById("splash");clear(box);clearTimeout(splashT);
+  var full=turkey(12,12,{label:"A dancing turkey"});
+  box.appendChild(h("div",{class:"in"},full,h("h2",{text:CHEERS[Math.floor(Math.random()*CHEERS.length)]}),
+    h("p",{text:"You're bringing "+dish+". Thanks, "+S.who+"!"}),h("small",{text:"Tap anywhere to keep going"})));
+  leaves(box,26);
+  box.className="";
+  function close(){box.className="hidden";clear(box);box.removeEventListener("click",close);}
+  box.addEventListener("click",close);
+  splashT=setTimeout(close,calm?2200:3000);
 }
 function refresh(quiet){
   return api.load(S.code).then(function(r){S.data=r;page();},function(e){if(!quiet)toast(e.message);if(/code/i.test(e.message))gate(e.message);});
 }
-function act(job,okMsg){
-  job.then(function(r){S.data=r;S.open="";page();if(okMsg)toast(okMsg,true);},function(e){toast(e.message);refresh(true);});
+function act(job,okMsg,dish){
+  job.then(function(r){S.data=r;S.open="";page();if(dish)splash(dish);else if(okMsg)toast(okMsg,true);},function(e){toast(e.message);refresh(true);});
 }
 function page(){
   var d=S.data,ev=d.event||{},menu=d.menu||[],ups=d.signups||[];
@@ -212,7 +274,7 @@ function page(){
   var left=planned.length-covered;
   wrap.appendChild(h("div",{class:"hero"},
     h("div",{},h("h1",{text:ev.title||"Thanksgiving Dinner"}),details),
-    h("div",{},pie(planned.length,covered),h("div",{class:"count",text:left?left+" still needed":"All covered!"}))));
+    h("div",{},turkey(planned.length,covered,{pop:S.first&&!calm}),h("div",{class:"count",text:left?left+" still needed":"All covered!"}))));
   if(clean(ev.note))wrap.appendChild(h("div",{class:"note",text:ev.note}));
 
   var mine=ups.filter(function(u){return same(u.who,S.who);});
@@ -228,7 +290,7 @@ function page(){
     var sec=h("section",{class:"cat"},h("h2",{},m.cat,h("span",{text:need?need+" open":"covered"})));
     list.forEach(function(x){sec.appendChild(dishRow(m.cat,x));});
     var inp=h("input",{"aria-label":"Add your own dish to "+m.cat,maxlength:"80",placeholder:"Bringing something else?"});
-    sec.appendChild(h("form",{class:"add",on:{submit:function(e){e.preventDefault();var v=clean(inp.value);if(!v){inp.focus();return;}act(api.claim(S.code,{cat:m.cat,dish:v,who:S.who,note:"",custom:true}),"Added "+v+" to your list.");}}},inp,h("button",{type:"submit",text:"Add dish"})));
+    sec.appendChild(h("form",{class:"add",on:{submit:function(e){e.preventDefault();var v=clean(inp.value);if(!v){inp.focus();return;}act(api.claim(S.code,{cat:m.cat,dish:v,who:S.who,note:"",custom:true}),"",v);}}},inp,h("button",{type:"submit",text:"Add dish"})));
     wrap.appendChild(sec);
   });
   root.appendChild(wrap);
@@ -242,7 +304,7 @@ function dishRow(cat,x){
     if(S.open===key){
       var note=h("input",{"aria-label":"Note for "+x.dish,maxlength:"160",placeholder:"What kind? (optional)"});
       row.appendChild(h("button",{class:"drop",type:"button",text:"Cancel",on:{click:function(){S.open="";page();}}}));
-      row.appendChild(h("form",{class:"confirm",on:{submit:function(e){e.preventDefault();act(api.claim(S.code,{cat:cat,dish:x.dish,who:S.who,note:note.value,custom:false}),"You're bringing "+x.dish+". Thank you!");}}},note,h("button",{type:"submit",text:"I'll bring it"})));
+      row.appendChild(h("form",{class:"confirm",on:{submit:function(e){e.preventDefault();act(api.claim(S.code,{cat:cat,dish:x.dish,who:S.who,note:note.value,custom:false}),"",x.dish);}}},note,h("button",{type:"submit",text:"I'll bring it"})));
       setTimeout(function(){try{note.focus();}catch(_){}} ,0);
     } else row.appendChild(h("button",{class:"claim",type:"button",text:"I'll bring it",on:{click:function(){S.open=key;page();}}}));
     return row;
