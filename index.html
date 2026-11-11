@@ -23,6 +23,8 @@ button{cursor:pointer}
 :focus-visible{outline:3px solid var(--butternut);outline-offset:2px}
 h1,h2,h3{font-family:var(--display);font-weight:400;margin:0;line-height:1.1;text-wrap:balance}
 .hidden{display:none!important}
+#bg{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:0}
+#root{position:relative;z-index:1}
 .wrap{max-width:640px;margin:0 auto;padding:20px 16px 72px;display:flex;flex-direction:column;gap:18px}
 
 /* Gate */
@@ -111,6 +113,7 @@ h1,h2,h3{font-family:var(--display);font-weight:400;margin:0;line-height:1.1;tex
 </style>
 </head>
 <body>
+<canvas id="bg" aria-hidden="true"></canvas>
 <div id="root"></div>
 <div id="splash" class="hidden" role="dialog" aria-live="assertive"></div>
 <div id="toast" class="toast hidden" role="status"></div>
@@ -317,6 +320,30 @@ function dishRow(cat,x){
   row.appendChild(whoLine);
   return row;
 }
+
+/* Falling leaves behind everything. */
+(function(){
+  var c=document.getElementById("bg"),g=c.getContext("2d"),W=0,H=0,dpr=Math.min(window.devicePixelRatio||1,2),L=[];
+  var cols=["#E0742B","#B3264A","#F2A93B","#C9533A","#8B4A2B"];
+  function size(){W=innerWidth;H=innerHeight;c.width=W*dpr;c.height=H*dpr;g.setTransform(dpr,0,0,dpr,0,0);}
+  addEventListener("resize",size);size();
+  var n=Math.round(Math.min(22,Math.max(10,W/30)));
+  for(var i=0;i<n;i++)L.push({x:Math.random()*W,y:Math.random()*H,s:7+Math.random()*9,vy:.35+Math.random()*.7,ph:Math.random()*6.3,sw:.6+Math.random()*1.2,r:Math.random()*6.3,vr:(Math.random()-.5)*.03,c:cols[i%cols.length],a:.35+Math.random()*.35});
+  function leaf(l){
+    g.save();g.translate(l.x,l.y);g.rotate(l.r);g.scale(l.s/10,l.s/10);g.globalAlpha=l.a;g.fillStyle=l.c;
+    g.beginPath();g.moveTo(0,-10);g.bezierCurveTo(7,-7,8,3,0,10);g.bezierCurveTo(-8,3,-7,-7,0,-10);g.fill();
+    g.strokeStyle="rgba(42,21,48,.55)";g.lineWidth=1;g.beginPath();g.moveTo(0,-8);g.lineTo(0,13);g.stroke();
+    g.restore();
+  }
+  function frame(){
+    g.clearRect(0,0,W,H);
+    L.forEach(function(l){l.ph+=.012;l.y+=l.vy;l.x+=Math.sin(l.ph)*l.sw;l.r+=l.vr+Math.sin(l.ph)*.01;
+      if(l.y>H+20){l.y=-20;l.x=Math.random()*W;}if(l.x<-20)l.x=W+20;if(l.x>W+20)l.x=-20;leaf(l);});
+    if(!calm&&document.visibilityState!=="hidden")requestAnimationFrame(frame);
+  }
+  frame();
+  document.addEventListener("visibilitychange",function(){if(!calm&&document.visibilityState==="visible")requestAnimationFrame(frame);});
+})();
 
 /* Keep the list fresh while someone has it open. */
 setInterval(function(){if(S.data&&document.visibilityState==="visible"&&!S.open)refresh(true);},45000);
