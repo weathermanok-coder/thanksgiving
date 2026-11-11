@@ -25,10 +25,25 @@ h1,h2,h3{font-family:var(--display);font-weight:400;margin:0;line-height:1.1;tex
 .hidden{display:none!important}
 #bg{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:0}
 #root{position:relative;z-index:1}
-.wrap{max-width:640px;margin:0 auto;padding:20px 16px 72px;display:flex;flex-direction:column;gap:18px}
+/* A clueless hunter tiptoes along the bottom, never quite spotting the turkey. */
+#hunter{position:fixed;left:0;bottom:6px;width:74px;height:96px;z-index:3;pointer-events:none;animation:prowl 34s linear infinite;will-change:transform}
+#hunter .flip{width:100%;height:100%;animation:face 34s steps(1) infinite}
+#hunter svg{width:100%;height:100%;display:block;overflow:visible}
+#hunter .legL{animation:legA .7s ease-in-out infinite;transform-origin:30px 62px}
+#hunter .legR{animation:legB .7s ease-in-out infinite;transform-origin:42px 62px}
+#hunter .bod{animation:hb .35s ease-in-out infinite alternate}
+#hunter .huh{opacity:0;animation:huh 34s linear infinite}
+@keyframes prowl{0%{transform:translateX(-90px)}22%{transform:translateX(calc(50vw - 37px))}30%{transform:translateX(calc(50vw - 37px))}48%{transform:translateX(calc(100vw + 20px))}52%{transform:translateX(calc(100vw + 20px))}72%{transform:translateX(calc(50vw - 37px))}80%{transform:translateX(calc(50vw - 37px))}100%{transform:translateX(-90px)}}
+@keyframes face{0%{transform:none}50%{transform:scaleX(-1)}}
+@keyframes legA{50%{transform:rotate(18deg)}}
+@keyframes legB{50%{transform:rotate(-18deg)}}
+@keyframes hb{to{transform:translateY(-2px)}}
+@keyframes huh{0%,23%{opacity:0}24%,29%{opacity:1}30%,73%{opacity:0}74%,79%{opacity:1}80%,100%{opacity:0}}
+@media (prefers-reduced-motion:reduce){#hunter{display:none}}
+.wrap{max-width:640px;margin:0 auto;padding:20px 16px 120px;display:flex;flex-direction:column;gap:18px}
 
 /* Gate */
-.gate{min-height:100vh;display:grid;place-items:center;padding:24px 16px}
+.gate{min-height:100vh;display:grid;place-items:center;padding:24px 16px 120px}
 .gate .box{width:100%;max-width:420px;display:flex;flex-direction:column;gap:14px}
 .gate h1{font-size:clamp(40px,12vw,64px)}
 .gate p{margin:0;color:#E7D6EA}
@@ -114,6 +129,21 @@ h1,h2,h3{font-family:var(--display);font-weight:400;margin:0;line-height:1.1;tex
 </head>
 <body>
 <canvas id="bg" aria-hidden="true"></canvas>
+<div id="hunter" aria-hidden="true"><div class="flip"><svg viewBox="0 0 74 96" xmlns="http://www.w3.org/2000/svg">
+<g class="huh"><circle cx="54" cy="8" r="9" fill="#FFF6E6"/><text x="54" y="13" text-anchor="middle" font-family="Georgia,serif" font-size="14" font-weight="700" fill="#2A1530">?</text></g>
+<g class="legL"><path d="M30 62 L28 86" stroke="#4A3B2A" stroke-width="7" stroke-linecap="round"/><path d="M24 88 h10" stroke="#2A1530" stroke-width="6" stroke-linecap="round"/></g>
+<g class="legR"><path d="M42 62 L44 86" stroke="#4A3B2A" stroke-width="7" stroke-linecap="round"/><path d="M40 88 h10" stroke="#2A1530" stroke-width="6" stroke-linecap="round"/></g>
+<g class="bod">
+<path d="M34 40 L70 30" stroke="#5B3A22" stroke-width="4" stroke-linecap="round"/><path d="M56 34 L70 30" stroke="#3A3A3A" stroke-width="3" stroke-linecap="round"/>
+<rect x="22" y="34" width="28" height="32" rx="9" fill="#F26B1D" stroke="#2A1530" stroke-width="2"/>
+<path d="M30 34 v32 M42 34 v32" stroke="#B94A12" stroke-width="2"/>
+<path d="M44 42 Q54 42 58 36" stroke="#C99A6B" stroke-width="6" stroke-linecap="round" fill="none"/>
+<circle cx="36" cy="22" r="11" fill="#E8B48A" stroke="#2A1530" stroke-width="2"/>
+<path d="M40 25 q2 3 5 1" stroke="#2A1530" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+<circle cx="40" cy="19" r="1.8" fill="#2A1530"/>
+<path d="M23 16 Q36 2 49 16 Z" fill="#B3264A" stroke="#2A1530" stroke-width="2"/><path d="M22 16 h30" stroke="#2A1530" stroke-width="3" stroke-linecap="round"/>
+<circle cx="36" cy="7" r="2.5" fill="#8E1B3A"/>
+</g></svg></div></div>
 <div id="root"></div>
 <div id="splash" class="hidden" role="dialog" aria-live="assertive"></div>
 <div id="toast" class="toast hidden" role="status"></div>
