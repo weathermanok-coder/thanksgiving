@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Thanksgiving Dinner</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Young+Serif&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+/* Evening table: a plum night, linen place cards, and a pie that fills a slice for every dish someone claims. */
+:root{
+  --night:#2A1530; --plum:#43204B; --linen:#FFF6E6; --butternut:#F2A93B; --cranberry:#B3264A;
+  --sage:#7FA37A; --ink:#24122A; --muted:#6E5A72; --line:#E9DCC8;
+  --display:"Young Serif",Georgia,serif; --body:"Outfit","Trebuchet MS",system-ui,sans-serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%}
+body{background:var(--night);color:var(--linen);font:400 17px/1.45 var(--body);-webkit-tap-highlight-color:transparent}
+button,input{font:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--butternut);outline-offset:2px}
+h1,h2,h3{font-family:var(--display);font-weight:400;margin:0;line-height:1.1;text-wrap:balance}
+.hidden{display:none!important}
+.wrap{max-width:640px;margin:0 auto;padding:20px 16px 72px;display:flex;flex-direction:column;gap:18px}
+
+/* Gate */
+.gate{min-height:100vh;display:grid;place-items:center;padding:24px 16px}
+.gate .box{width:100%;max-width:420px;display:flex;flex-direction:column;gap:14px}
+.gate h1{font-size:clamp(40px,12vw,64px)}
+.gate p{margin:0;color:#E7D6EA}
+.fld{display:flex;flex-direction:column;gap:6px}
+.fld label{font-weight:600;font-size:15px}
+.inp{min-height:50px;border:2px solid transparent;border-radius:12px;background:var(--linen);color:var(--ink);padding:10px 13px;font-size:17px;width:100%}
+.inp:focus{outline:none;border-color:var(--butternut)}
+.go{min-height:54px;border:0;border-radius:14px;background:var(--butternut);color:var(--ink);font-weight:800;font-size:18px}
+.go:disabled{opacity:.6}
+.err{background:var(--cranberry);color:#fff;border-radius:12px;padding:10px 13px;font-weight:600}
+.small{font-size:14px;color:#D9C6DD}
+
+/* Top bar */
+.bar{display:flex;align-items:center;gap:10px}
+.bar .me{flex:1;min-width:0;font-weight:600;font-size:15px;color:#E7D6EA;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ghost{min-height:44px;padding:0 13px;border:2px solid #7E5A86;border-radius:10px;background:none;color:var(--linen);font-weight:600;font-size:15px}
+
+/* Hero with pie */
+.hero{display:grid;grid-template-columns:1fr auto;gap:16px;align-items:center}
+.hero h1{font-size:clamp(32px,8.5vw,48px)}
+.details{display:flex;flex-direction:column;gap:3px;margin-top:8px;font-size:16px;color:#EEDFF0}
+.details b{font-weight:600;color:var(--linen)}
+.pie{width:min(128px,32vw);aspect-ratio:1;display:block}
+.pie .s{transition:fill .4s}
+.pie .s.on{animation:slice .5s cubic-bezier(.3,1.6,.5,1) backwards}
+@keyframes slice{from{transform:scale(.6);opacity:0}}
+.count{text-align:center;font-weight:800;font-size:14px;margin-top:4px}
+.note{background:var(--plum);border-radius:12px;padding:10px 13px;font-size:15px}
+
+/* My list */
+.mine{background:var(--butternut);color:var(--ink);border-radius:14px;padding:12px 14px;display:flex;flex-direction:column;gap:6px}
+.mine h2{font-size:20px}
+.mine ul{margin:0;padding-left:20px}
+
+/* Menu */
+.cat{display:flex;flex-direction:column;gap:8px}
+.cat h2{font-size:24px;display:flex;align-items:baseline;gap:10px}
+.cat h2 span{font-family:var(--body);font-size:14px;font-weight:600;color:#D9C6DD}
+.dish{background:var(--linen);color:var(--ink);border-radius:14px;padding:10px 12px;display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;border-left:8px solid var(--butternut)}
+.dish.taken{border-left-color:var(--sage)}
+.dish.yours{border-left-color:var(--cranberry)}
+.dish .name{flex:1 1 150px;font-weight:800;font-size:17px;overflow-wrap:anywhere}
+.dish .who{flex-basis:100%;order:3;font-size:15px;color:var(--muted);overflow-wrap:anywhere}
+.dish .who b{color:var(--ink)}
+.claim{min-height:44px;padding:0 14px;border:0;border-radius:10px;background:var(--butternut);color:var(--ink);font-weight:800;font-size:15px}
+.drop{min-height:44px;padding:0 12px;border:2px solid var(--cranberry);border-radius:10px;background:none;color:var(--cranberry);font-weight:800;font-size:14px}
+.confirm{flex-basis:100%;order:4;display:flex;gap:8px}
+.confirm input{flex:1;min-width:0;min-height:44px;border:2px solid var(--line);border-radius:10px;padding:8px 10px;font-size:16px;color:var(--ink);background:#fff}
+.confirm button{min-height:44px;padding:0 14px;border:0;border-radius:10px;background:var(--cranberry);color:#fff;font-weight:800;font-size:15px}
+.add{display:flex;gap:8px;flex-wrap:wrap}
+.add input{flex:1 1 180px;min-width:0;min-height:46px;border:2px dashed #7E5A86;border-radius:12px;background:transparent;color:var(--linen);padding:8px 12px;font-size:16px}
+.add input::placeholder{color:#BFA8C4}
+.add button{min-height:46px;padding:0 14px;border:2px solid var(--butternut);border-radius:12px;background:none;color:var(--butternut);font-weight:800;font-size:15px}
+.toast{position:fixed;left:16px;right:16px;bottom:16px;max-width:600px;margin:0 auto;z-index:5;background:var(--cranberry);color:#fff;border-radius:12px;padding:12px 14px;font-weight:600;box-shadow:0 8px 30px rgba(0,0,0,.35)}
+.toast.ok{background:var(--sage);color:var(--ink)}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<div id="toast" class="toast hidden" role="status"></div>
+<script>
+(function(){
+"use strict";
+/* Paste your Google Apps Script web app URL (ends in /exec) between the quotes. */
+var API_URL="https://script.google.com/macros/s/AKfycbzBJpqZ2i5QL6nylkBFppKgPAAfukE2XOSy3sJcxQjzozuNmoT4ajBtI1UU04NqbJZJZA/exec"; if(API_URL.indexOf("__API")===0) API_URL="";
+var live=!!API_URL;
+
+function h(tag,attrs){
+  var el=document.createElement(tag),a,i,c;attrs=attrs||{};
+  for(a in attrs){
+    if(a==="on"){for(var ev in attrs.on)el.addEventListener(ev,attrs.on[ev]);}
+    else if(a==="class")el.className=attrs[a];
+    else if(a==="text")el.textContent=attrs[a];
+    else if(a==="value")el.value=attrs[a];
+    else if(attrs[a]===false||attrs[a]==null){}
+    else el.setAttribute(a,attrs[a]);
+  }
+  for(i=2;i<arguments.length;i++){c=arguments[i];if(c==null||c===false)continue;el.appendChild(typeof c==="string"?document.createTextNode(c):c);}
+  return el;
+}
+function clear(n){while(n.firstChild)n.removeChild(n.firstChild);}
+function clean(v){return String(v==null?"":v).trim().replace(/\s+/g," ");}
+function same(a,b){return clean(a).toLowerCase()===clean(b).toLowerCase();}
+function lsGet(k){try{return localStorage.getItem(k)||"";}catch(e){return "";}}
+function lsSet(k,v){try{localStorage.setItem(k,v);}catch(e){}}
+var root=document.getElementById("root"),toastEl=document.getElementById("toast"),toastT=null;
+function toast(msg,ok){toastEl.textContent=msg;toastEl.className="toast"+(ok?" ok":"");clearTimeout(toastT);toastT=setTimeout(function(){toastEl.className="toast hidden";},4200);}
+
+/* ---------- Backend: the real Google Apps Script, or a sample one for the preview ---------- */
+function call(fn,args){
+  return fetch(API_URL,{method:"POST",credentials:"omit",redirect:"follow",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({fn:fn,args:args})})
+    .then(function(r){if(!r.ok)throw new Error();return r.json();},function(){throw new Error("The connection dropped. Check your Wi-Fi and try again.");})
+    .then(function(o){if(!o||o.ok===false)throw new Error(o&&o.error||"Something went wrong. Try again in a minute.");return o;},function(e){throw new Error(e&&e.message||"Something went wrong. Try again in a minute.");});
+}
+var mock=(function(){
+  var menu=[{cat:"Main",items:["Turkey","Ham"]},{cat:"Sides",items:["Mashed potatoes","Gravy","Stuffing","Green bean casserole","Sweet potatoes","Mac and cheese","Corn","Cranberry sauce"]},{cat:"Bread and salad",items:["Rolls","Salad"]},{cat:"Appetizers",items:["Veggie tray","Cheese and crackers","Deviled eggs"]},{cat:"Desserts",items:["Pumpkin pie","Pecan pie","Apple pie","Whipped cream"]},{cat:"Drinks and extras",items:["Tea","Soda","Coffee","Ice","Plates, cups and napkins"]}];
+  var ev={title:"Thanksgiving Dinner",date:"Thursday, November 26",time:"2:00 PM, dinner at 3",place:"Sample house, 123 Maple St",host:"Hosted by the sample family",note:"Preview with made-up sign-ups. Nothing you do here is saved."};
+  var rows=[{id:"a",cat:"Main",dish:"Turkey",who:"Sample host",note:"Smoked"},{id:"b",cat:"Sides",dish:"Stuffing",who:"Aunt Jo",note:"Cornbread"},{id:"c",cat:"Desserts",dish:"Pumpkin pie",who:"Nana",note:""},{id:"d",cat:"Desserts",dish:"Grandma's fudge",who:"Opa",note:""},{id:"e",cat:"Drinks and extras",dish:"Ice",who:"Uncle Ray",note:"2 bags"}];
+  function st(){return {ok:true,event:ev,menu:menu,signups:rows.slice()};}
+  function wait(v){return new Promise(function(r){setTimeout(function(){r(v);},200);});}
+  return {
+    info:function(){return wait({ok:true,title:ev.title,date:ev.date});},
+    load:function(){return wait(st());},
+    claim:function(code,c){var hit=rows.filter(function(r){return r.cat===c.cat&&same(r.dish,c.dish);})[0];if(hit)return Promise.reject(new Error(hit.who+" is already bringing "+hit.dish+"."));rows.push({id:"x"+Date.now(),cat:c.cat,dish:clean(c.dish),who:clean(c.who),note:clean(c.note)});return wait(st());},
+    release:function(code,id,who){var hit=rows.filter(function(r){return r.id===id;})[0];if(hit&&!same(hit.who,who))return Promise.reject(new Error("Only "+hit.who+" can take this off their list."));rows=rows.filter(function(r){return r.id!==id;});return wait(st());}
+  };
+})();
+var api={};
+["info","load","claim","release"].forEach(function(fn){api[fn]=function(){var a=[].slice.call(arguments);return live?call(fn,a):mock[fn].apply(mock,a);};});
+
+/* ---------- State ---------- */
+var S={code:lsGet("tg_code"),who:lsGet("tg_who"),data:null,open:"",first:true};
+var calm=window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+/* ---------- Gate ---------- */
+function gate(msg){
+  clear(root);
+  var who=h("input",{id:"who",class:"inp",autocomplete:"name",maxlength:"40",placeholder:"Aunt Jo",value:S.who});
+  var code=h("input",{id:"code",class:"inp",autocomplete:"off",autocapitalize:"off",placeholder:"Ask the host",value:S.code});
+  var err=h("div",{class:"err"+(msg?"":" hidden"),role:"alert",text:msg||""});
+  var go=h("button",{class:"go",type:"submit",text:"See the menu"});
+  var title=h("h1",{text:"Thanksgiving Dinner"}),date=h("p",{});
+  api.info().then(function(r){if(r.title)title.textContent=r.title;if(r.date)date.textContent=r.date;},function(){});
+  var form=h("form",{class:"box",on:{submit:function(e){
+    e.preventDefault();
+    var w=clean(who.value),c=clean(code.value);
+    if(!w){show("Type your name so everyone knows who's bringing what.");return;}
+    if(!c){show("Type the family code. The host has it.");return;}
+    go.disabled=true;go.textContent="Opening";
+    api.load(c).then(function(r){S.code=c;S.who=w;lsSet("tg_code",c);lsSet("tg_who",w);S.data=r;page();},function(e){go.disabled=false;go.textContent="See the menu";show(e.message);});
+  }}},
+    title,date,
+    h("p",{text:"Sign up for a dish so we have everything covered and nothing doubles up."}),
+    h("div",{class:"fld"},h("label",{for:"who",text:"Your name, as the family knows you"}),who),
+    h("div",{class:"fld"},h("label",{for:"code",text:"Family code"}),code),
+    !live&&h("p",{class:"small",text:"Preview: any name and code work. The sign-ups are made up."}),
+    err,go);
+  function show(t){err.textContent=t;err.classList.remove("hidden");}
+  root.appendChild(h("div",{class:"gate"},form));
+}
+
+/* ---------- Main page ---------- */
+function pie(total,done){
+  var ns="http://www.w3.org/2000/svg",s=document.createElementNS(ns,"svg");
+  s.setAttribute("viewBox","-52 -52 104 104");s.setAttribute("class","pie");s.setAttribute("role","img");
+  s.setAttribute("aria-label",done+" of "+total+" menu dishes covered");
+  var crust=document.createElementNS(ns,"circle");crust.setAttribute("r","50");crust.setAttribute("fill","#C98B3A");s.appendChild(crust);
+  var n=Math.max(total,1);
+  for(var i=0;i<n;i++){
+    var a0=(i/n)*Math.PI*2-Math.PI/2,a1=((i+1)/n)*Math.PI*2-Math.PI/2,r=44,g=total?0.5:0;
+    var p=document.createElementNS(ns,"path");
+    var big=(a1-a0)>Math.PI?1:0;
+    p.setAttribute("d","M0 0 L"+(r*Math.cos(a0)).toFixed(2)+" "+(r*Math.sin(a0)).toFixed(2)+" A"+r+" "+r+" 0 "+big+" 1 "+(r*Math.cos(a1)).toFixed(2)+" "+(r*Math.sin(a1)).toFixed(2)+" Z");
+    var on=i<done;
+    p.setAttribute("fill",on?"#E0742B":"#5A2F60");p.setAttribute("stroke","#2A1530");p.setAttribute("stroke-width","1.4");
+    p.setAttribute("class","s"+(on?" on":""));
+    if(on&&S.first&&!calm)p.style.animationDelay=(i*0.06)+"s";
+    s.appendChild(p);
+  }
+  return s;
+}
+function refresh(quiet){
+  return api.load(S.code).then(function(r){S.data=r;page();},function(e){if(!quiet)toast(e.message);if(/code/i.test(e.message))gate(e.message);});
+}
+function act(job,okMsg){
+  job.then(function(r){S.data=r;S.open="";page();if(okMsg)toast(okMsg,true);},function(e){toast(e.message);refresh(true);});
+}
+function page(){
+  var d=S.data,ev=d.event||{},menu=d.menu||[],ups=d.signups||[];
+  var y=window.scrollY;clear(root);
+  var wrap=h("div",{class:"wrap"});
+  wrap.appendChild(h("div",{class:"bar"},
+    h("div",{class:"me",text:"Signed in as "+S.who}),
+    h("button",{class:"ghost",type:"button",text:"Not you?",on:{click:function(){S.who="";lsSet("tg_who","");gate();}}}),
+    h("button",{class:"ghost",type:"button",text:"Refresh",on:{click:function(){refresh();}}})));
+
+  var planned=[],covered=0;
+  menu.forEach(function(m){m.items.forEach(function(it){planned.push([m.cat,it]);if(ups.some(function(u){return u.cat===m.cat&&same(u.dish,it);}))covered++;});});
+  var extras=ups.filter(function(u){return !planned.some(function(p){return p[0]===u.cat&&same(p[1],u.dish);});}).length;
+  var details=h("div",{class:"details"});
+  [ev.date,ev.time,ev.place,ev.host].forEach(function(t,i){if(clean(t))details.appendChild(h("div",{},i===0?h("b",{text:t}):t));});
+  var left=planned.length-covered;
+  wrap.appendChild(h("div",{class:"hero"},
+    h("div",{},h("h1",{text:ev.title||"Thanksgiving Dinner"}),details),
+    h("div",{},pie(planned.length,covered),h("div",{class:"count",text:left?left+" still needed":"All covered!"}))));
+  if(clean(ev.note))wrap.appendChild(h("div",{class:"note",text:ev.note}));
+
+  var mine=ups.filter(function(u){return same(u.who,S.who);});
+  if(mine.length){
+    var ul=h("ul");mine.forEach(function(u){ul.appendChild(h("li",{text:u.dish+(clean(u.note)?" ("+u.note+")":"")}));});
+    wrap.appendChild(h("div",{class:"mine"},h("h2",{text:"You're bringing"}),ul));
+  }
+
+  menu.forEach(function(m){
+    var list=m.items.map(function(it){return {dish:it,up:ups.filter(function(u){return u.cat===m.cat&&same(u.dish,it);})[0]};});
+    ups.forEach(function(u){if(u.cat===m.cat&&!m.items.some(function(it){return same(it,u.dish);}))list.push({dish:u.dish,up:u,extra:true});});
+    var need=list.filter(function(x){return !x.up;}).length;
+    var sec=h("section",{class:"cat"},h("h2",{},m.cat,h("span",{text:need?need+" open":"covered"})));
+    list.forEach(function(x){sec.appendChild(dishRow(m.cat,x));});
+    var inp=h("input",{"aria-label":"Add your own dish to "+m.cat,maxlength:"80",placeholder:"Bringing something else?"});
+    sec.appendChild(h("form",{class:"add",on:{submit:function(e){e.preventDefault();var v=clean(inp.value);if(!v){inp.focus();return;}act(api.claim(S.code,{cat:m.cat,dish:v,who:S.who,note:"",custom:true}),"Added "+v+" to your list.");}}},inp,h("button",{type:"submit",text:"Add dish"})));
+    wrap.appendChild(sec);
+  });
+  root.appendChild(wrap);
+  window.scrollTo(0,y);
+  S.first=false;
+}
+function dishRow(cat,x){
+  var key=cat+"|"+x.dish,u=x.up,row;
+  if(!u){
+    row=h("div",{class:"dish"},h("div",{class:"name",text:x.dish}));
+    if(S.open===key){
+      var note=h("input",{"aria-label":"Note for "+x.dish,maxlength:"160",placeholder:"What kind? (optional)"});
+      row.appendChild(h("button",{class:"drop",type:"button",text:"Cancel",on:{click:function(){S.open="";page();}}}));
+      row.appendChild(h("form",{class:"confirm",on:{submit:function(e){e.preventDefault();act(api.claim(S.code,{cat:cat,dish:x.dish,who:S.who,note:note.value,custom:false}),"You're bringing "+x.dish+". Thank you!");}}},note,h("button",{type:"submit",text:"I'll bring it"})));
+      setTimeout(function(){try{note.focus();}catch(_){}} ,0);
+    } else row.appendChild(h("button",{class:"claim",type:"button",text:"I'll bring it",on:{click:function(){S.open=key;page();}}}));
+    return row;
+  }
+  var yours=same(u.who,S.who);
+  row=h("div",{class:"dish "+(yours?"yours":"taken")},h("div",{class:"name",text:u.dish}));
+  if(yours)row.appendChild(h("button",{class:"drop",type:"button",text:"Take off my list",on:{click:function(){act(api.release(S.code,u.id,S.who),"Took "+u.dish+" off your list.");}}}));
+  var whoLine=h("div",{class:"who"},h("b",{text:yours?"You":u.who}),yours?" are bringing this":" is bringing this");
+  if(clean(u.note))whoLine.appendChild(document.createTextNode(". "+u.note));
+  row.appendChild(whoLine);
+  return row;
+}
+
+/* Keep the list fresh while someone has it open. */
+setInterval(function(){if(S.data&&document.visibilityState==="visible"&&!S.open)refresh(true);},45000);
+document.addEventListener("visibilitychange",function(){if(S.data&&document.visibilityState==="visible"&&!S.open)refresh(true);});
+
+if(S.code&&S.who){api.load(S.code).then(function(r){S.data=r;page();},function(e){gate(e.message);});}
+else gate();
+})();
+</script>
+</body>
+</html>
